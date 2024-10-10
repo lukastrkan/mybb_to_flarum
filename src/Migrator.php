@@ -111,7 +111,7 @@ class Migrator
     {
         $this->disableForeignKeyChecks();
         
-        $users = $this->getMybbConnection()->query("SELECT uid, username, email, postnum, threadnum, FROM_UNIXTIME( regdate ) AS regdate, FROM_UNIXTIME( lastvisit ) AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users")
+        $users = $this->getMybbConnection()->query("SELECT uid, username, email, postnum, threadnum, to_timestamp( regdate ) AT TIME ZONE 'UTC' AS regdate, to_timestamp( lastvisit )  AT TIME ZONE 'UTC' AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users")
             ->fetchAll(\PDO::FETCH_OBJ);
         
         if(count($users) > 0)
@@ -223,7 +223,7 @@ class Migrator
         /** @var UrlGenerator $generator */
         $generator = resolve(UrlGenerator::class);
             
-        $query = "SELECT tid, fid, subject, FROM_UNIXTIME(dateline) as dateline, uid, firstpost, FROM_UNIXTIME(lastpost) as lastpost, lastposteruid, closed, sticky, visible FROM {$this->getPrefix()}threads";
+        $query = "SELECT tid, fid, subject, to_timestamp(dateline) AT TIME ZONE 'UTC' as dateline, uid, firstpost, to_timestamp(lastpost) AT TIME ZONE 'UTC' as lastpost, lastposteruid, closed, sticky, visible FROM {$this->getPrefix()}threads";
         if(!$migrateSoftDeletedThreads)
         {
             $query .= " WHERE visible != -1";
