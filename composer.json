@@ -1,5 +1,5 @@
 {
-  "name": "lukastrkan/mybb-to-flarum",
+  "name": "michaelbelgium/mybb-to-flarum",
   "description": "Migrate a MyBB Forum to a fresh Flarum instance",
   "type": "flarum-extension",
   "require": {
@@ -38,8 +38,5 @@
         "color": "#fff"
       }
     }
-  },
-  "conflict": {
-    "michaelbelgium/mybb-to-flarum": "*"
   }
 }
