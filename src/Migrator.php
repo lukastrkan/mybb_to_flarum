@@ -44,36 +44,53 @@ class Migrator
      * @param string $prefix
      * @param string $mybbPath
      */
-    public function __construct(string $host, string $user, string $password, string $db, string $prefix, string $mybbPath = '') 
+    public function __construct(string $host, string $user, string $password, string $db, string $prefix, string $mybbPath = '')
     {
-        $this->connection = new \mysqli($host, $user, $password, $db);
-        $this->connection->set_charset('utf8');
+        // Create a DSN string for PostgreSQL
+        $dsn = "pgsql:host=$host;dbname=$db";
+
+        try {
+            // Establish connection using PDO for PostgreSQL
+            $this->connection = new \PDO($dsn, $user, $password);
+
+            // Set the error mode to exception to handle errors
+            $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            // Set the character encoding to UTF-8
+            $this->connection->exec("SET NAMES 'UTF8'");
+        } catch (\PDOException $e) {
+            // Handle connection errors
+            die("Error connecting to PostgreSQL: " . $e->getMessage());
+        }
+
+        // Set the database table prefix
         $this->db_prefix = $prefix;
 
-        if(substr($mybbPath, -1) != '/')
+        // Ensure the MyBB path ends with a '/'
+        if (substr($mybbPath, -1) != '/')
             $mybbPath .= '/';
-        
+
         $this->mybb_path = $mybbPath;
     }
 
-    function __destruct() 
-    {
-        if(!is_null($this->getMybbConnection()))
-            $this->getMybbConnection()->close();
-    }
+//    function __destruct()
+//    {
+//        if(!is_null($this->getMybbConnection()))
+//            $this->getMybbConnection()->close();
+//    }
 
     /**
      * Migrate custom user groups
      */
     public function migrateUserGroups()
     {
-        $groups = $this->getMybbConnection()->query("SELECT * FROM {$this->getPrefix()}usergroups WHERE type = 2");
+        $groups = $this->getMybbConnection()->query("SELECT * FROM {$this->getPrefix()}usergroups WHERE type = 2")->fetchAll(\PDO::FETCH_OBJ);
 
-        if($groups->num_rows > 0)
+        if(count($groups) > 0)
         {
             Group::where('id', '>', '4')->delete();
 
-            while($row = $groups->fetch_object())
+            foreach ($groups as $row)
             {
                 $group = Group::build($row->title, $row->title, $this->generateRandomColor(), null);
                 $group->id = $row->gid;
@@ -94,13 +111,14 @@ class Migrator
     {
         $this->disableForeignKeyChecks();
         
-        $users = $this->getMybbConnection()->query("SELECT uid, username, email, postnum, threadnum, FROM_UNIXTIME( regdate ) AS regdate, FROM_UNIXTIME( lastvisit ) AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users");
+        $users = $this->getMybbConnection()->query("SELECT uid, username, email, postnum, threadnum, FROM_UNIXTIME( regdate ) AS regdate, FROM_UNIXTIME( lastvisit ) AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users")
+            ->fetchAll(\PDO::FETCH_OBJ);
         
-        if($users->num_rows > 0)
+        if(count($users) > 0)
         {
             User::truncate();
 
-            while($row = $users->fetch_object())
+            foreach ($users as $row)
             {
                 $newUser = User::register(
                     $row->username, 
@@ -162,13 +180,14 @@ class Migrator
      */
     public function migrateCategories()
     {
-        $categories = $this->getMybbConnection()->query("SELECT fid, name, description, linkto, disporder, pid FROM {$this->getPrefix()}forums order by fid");
+        $categories = $this->getMybbConnection()->query("SELECT fid, name, description, linkto, disporder, pid FROM {$this->getPrefix()}forums order by fid")
+            ->fetchAll(\PDO::FETCH_OBJ);
 
-        if($categories->num_rows > 0)
+        if(count($categories) > 0)
         {
             Tag::getQuery()->delete();
 
-            while($row = $categories->fetch_object())
+            foreach ($categories as $row)
             {
                 if(!empty($row->linkto)) continue; //forums with links are not supported in flarum
 
@@ -210,15 +229,15 @@ class Migrator
             $query .= " WHERE visible != -1";
         }
 
-        $threads = $this->getMybbConnection()->query($query);
+        $threads = $this->getMybbConnection()->query($query)->fetchAll(\PDO::FETCH_OBJ);
 
-        if($threads->num_rows > 0)
+        if(count($threads) > 0)
         {
             Discussion::getQuery()->delete();
             Post::getQuery()->delete();
             $usersToRefresh = [];
 
-            while($trow = $threads->fetch_object())
+            foreach ($threads as $trow)
             {
                 $tag = Tag::find($trow->fid);
 
@@ -265,11 +284,11 @@ class Migrator
                 }
                 $query .= " order by pid";
 
-                $posts = $this->getMybbConnection()->query($query);
+                $posts = $this->getMybbConnection()->query($query)->fetchAll(\PDO::FETCH_OBJ);
 
                 $number = 0;
                 $firstPost = null;
-                while($prow = $posts->fetch_object())
+                foreach ($posts as $prow)
                 {
                     $user = User::find($prow->uid);
 
@@ -292,9 +311,9 @@ class Migrator
 
                     if($migrateAttachments)
                     {                        
-                        $attachments = $this->getMybbConnection()->query("SELECT * FROM {$this->getPrefix()}attachments WHERE pid = {$prow->pid}");
+                        $attachments = $this->getMybbConnection()->query("SELECT * FROM {$this->getPrefix()}attachments WHERE pid = {$prow->pid}")->fetchAll(\PDO::FETCH_OBJ);
 
-                        while ($arow = $attachments->fetch_object())
+                        foreach ($attachments as $arow)
                         {
                             $filePath = $this->getMybbPath().'uploads/'.$arow->attachname;
                             $toFilePath = self::FLARUM_UPLOAD_PATH.$arow->attachname;
