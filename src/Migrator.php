@@ -111,7 +111,7 @@ class Migrator
     {
         $this->disableForeignKeyChecks();
         
-        $users = $this->getMybbConnection()->query("SELECT uid, username, email, postnum, threadnum, to_timestamp( regdate ) AT TIME ZONE 'UTC' AS regdate, to_timestamp( lastvisit )  AT TIME ZONE 'UTC' AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users")
+        $users = $this->getMybbConnection()->query("SELECT uid, username, lower(email) email, postnum, threadnum, to_timestamp( regdate ) AT TIME ZONE 'UTC' AS regdate, to_timestamp( lastvisit )  AT TIME ZONE 'UTC' AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users")
             ->fetchAll(\PDO::FETCH_OBJ);
         
         if(count($users) > 0)
