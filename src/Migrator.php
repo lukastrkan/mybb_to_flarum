@@ -116,7 +116,7 @@ class Migrator
         
         if(count($users) > 0)
         {
-            User::truncate();
+            User::query()::whereRaw('id<10000')->delete();
 
             foreach ($users as $row)
             {
