@@ -277,7 +277,7 @@ class Migrator
                     } while($continue);
                 }
 
-                $query = "SELECT pid, tid, FROM_UNIXTIME(dateline) as dateline, uid, message, visible FROM {$this->getPrefix()}posts WHERE tid = {$discussion->id}";
+                $query = "SELECT pid, tid, to_timestamp( dateline ) AT TIME ZONE 'UTC' as dateline, uid, message, visible FROM {$this->getPrefix()}posts WHERE tid = {$discussion->id}";
                 if(!$migrateSoftDeletePosts)
                 {
                     $query .= " AND visible != -1";
