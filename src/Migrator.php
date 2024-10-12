@@ -111,7 +111,7 @@ class Migrator
     {
         $this->disableForeignKeyChecks();
         
-        $users = $this->getMybbConnection()->query("SELECT uid, username, lower(email) email, postnum, threadnum, to_timestamp( regdate ) AT TIME ZONE 'UTC' AS regdate, to_timestamp( lastvisit )  AT TIME ZONE 'UTC' AS lastvisit, usergroup, additionalgroups, avatar, lastip FROM {$this->getPrefix()}users WHERE uid > 1")
+        $users = $this->getMybbConnection()->query("SELECT uid, username, lower(email) email, postnum, threadnum, to_timestamp( regdate ) AT TIME ZONE 'UTC' AS regdate, to_timestamp( lastvisit )  AT TIME ZONE 'UTC' AS lastvisit, usergroup, additionalgroups, avatar, lastip, password FROM {$this->getPrefix()}users WHERE uid > 1")
             ->fetchAll(\PDO::FETCH_OBJ);
         
         if(count($users) > 0)
@@ -132,6 +132,17 @@ class Migrator
                 $newUser->last_seen_at = $row->lastvisit;
                 $newUser->discussion_count = $row->threadnum;
                 $newUser->comment_count = $row->postnum;
+                if ($row->password){
+                    $newUser->migratetoflarum_old_password = json_encode([
+                        'type' => 'argon2id',
+                        'password' => $row->password,
+                        'params' => [
+                            'memory_cost' => 1 << 16,
+                            'time_cost' => 4,
+                            'threads' => 1,
+                        ]
+                    ]);
+                }
 
                 if($migrateAvatars && !empty($this->getMybbPath()) && !empty($row->avatar))
                 {
