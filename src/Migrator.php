@@ -333,10 +333,18 @@ class Migrator
                             if(!copy($filePath,$toFilePath)) continue;
 
                             $uploader = User::find($arow->uid);
-                            $fileTemplate = new \FoF\Upload\Templates\FileTemplate(
-                                resolve(Factory::class),
-                                resolve(TranslatorInterface::class)
-                            );
+
+                            if (str_starts_with($arow->filetype, 'image/')) {
+                                $fileTemplate = new \FoF\Upload\Templates\ImagePreviewTemplate(
+                                    resolve(Factory::class),
+                                    resolve(TranslatorInterface::class)
+                                );
+                            } else {
+                                $fileTemplate = new \FoF\Upload\Templates\FileTemplate(
+                                    resolve(Factory::class),
+                                    resolve(TranslatorInterface::class)
+                                );
+                            }
 
                             $file = new \FoF\Upload\File();
                             $file->actor()->associate($uploader);
