@@ -340,12 +340,14 @@ class Migrator
 
                             $file = new \FoF\Upload\File();
                             $file->actor()->associate($uploader);
+                            //filename
                             $file->base_name = $arow->filename;
-                            $file->path = $arow->attachname;
+                            //cesta k souboru
+                            $file->path = 'old/'.$arow->filename;
                             $file->type = $arow->filetype;
                             $file->size = (int)$arow->filesize;
                             $file->upload_method = 'local';
-                            $file->url = $generator->to('forum')->path('assets/files/'.$arow->attachname);
+                            $file->url = $generator->to('forum')->path('assets/files/old/'.$arow->filename);
                             $file->uuid = Uuid::uuid4()->toString();
                             $file->tag = $fileTemplate;
                             $file->save();
