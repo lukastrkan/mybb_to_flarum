@@ -134,13 +134,8 @@ class Migrator
                 $newUser->comment_count = $row->postnum;
                 if ($row->password){
                     $newUser->migratetoflarum_old_password = json_encode([
-                        'type' => 'argon2id',
+                        'type' => 'bcrypt',
                         'password' => $row->password,
-                        'params' => [
-                            'memory_cost' => 1 << 16,
-                            'time_cost' => 4,
-                            'threads' => 1,
-                        ]
                     ]);
                 }
 
