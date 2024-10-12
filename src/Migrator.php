@@ -339,8 +339,7 @@ class Migrator
                             );
 
                             $file = new \FoF\Upload\File();
-                            $file->post()->associate($post);
-                            $file->discussion()->associate($post->discussion);
+                            $file->posts->add($post);
                             $file->actor()->associate($uploader);
                             $file->base_name = $arow->filename;
                             $file->path = $arow->attachname;
@@ -352,8 +351,8 @@ class Migrator
                             $file->tag = $fileTemplate;
                             $file->save();
 
-                            $file->post->content = $file->post->content . $fileTemplate->preview($file);
-                            $file->post->save();
+                            $post->content = $post->content . $fileTemplate->preview($file);
+                            $post->save();
 
                             $this->count["attachments"]++;
                         }
