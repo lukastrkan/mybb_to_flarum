@@ -33,8 +33,8 @@ class Migrator
         "attachments" => 0,
     ];
 
-    const FLARUM_AVATAR_PATH = "public/assets/avatars/";
-    const FLARUM_UPLOAD_PATH = "public/assets/files/";
+    const FLARUM_AVATAR_PATH = "assets/avatars/";
+    const FLARUM_UPLOAD_PATH = "assets/files/";
 
     /**
      * Migrator constructor
