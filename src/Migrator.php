@@ -324,7 +324,7 @@ class Migrator
                         foreach ($attachments as $arow)
                         {
                             $filePath = $this->getMybbPath().'uploads/'.$arow->attachname;
-                            $toFilePath = self::FLARUM_UPLOAD_PATH.$arow->attachname;
+                            $toFilePath = self::FLARUM_UPLOAD_PATH.'old/'.$arow->filename;
                             $dirFilePath = dirname($toFilePath);
 
                             if(!file_exists($dirFilePath))
@@ -339,7 +339,6 @@ class Migrator
                             );
 
                             $file = new \FoF\Upload\File();
-                            $file->posts->add($post);
                             $file->actor()->associate($uploader);
                             $file->base_name = $arow->filename;
                             $file->path = $arow->attachname;
@@ -353,6 +352,8 @@ class Migrator
 
                             $post->content = $post->content . $fileTemplate->preview($file);
                             $post->save();
+
+                            $file->posts()->save($post);
 
                             $this->count["attachments"]++;
                         }
