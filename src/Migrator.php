@@ -319,7 +319,7 @@ class Migrator
 
                     if($migrateAttachments)
                     {                        
-                        $attachments = $this->getMybbConnection()->query("SELECT uid, attachname, unaccent(filename) filename, filetype, filesize FROM {$this->getPrefix()}attachments WHERE pid = {$prow->pid}")->fetchAll(\PDO::FETCH_OBJ);
+                        $attachments = $this->getMybbConnection()->query("SELECT uid, attachname, replace(replace(replace(unaccent(mybb_attachments.filename), '(', ''), ')', ''), ' ', '_') filename, filetype, filesize FROM {$this->getPrefix()}attachments WHERE pid = {$prow->pid}")->fetchAll(\PDO::FETCH_OBJ);
 
                         foreach ($attachments as $arow)
                         {
