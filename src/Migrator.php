@@ -9,8 +9,10 @@ use Flarum\Discussion\Discussion;
 use Flarum\Http\UrlGenerator;
 use Flarum\Post\CommentPost;
 use Flarum\Post\Post;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Migrator class
@@ -331,7 +333,10 @@ class Migrator
                             if(!copy($filePath,$toFilePath)) continue;
 
                             $uploader = User::find($arow->uid);
-                            $fileTemplate = new \FoF\Upload\Templates\FileTemplate();
+                            $fileTemplate = new \FoF\Upload\Templates\FileTemplate(
+                                resolve(Factory::class),
+                                resolve(TranslatorInterface::class)
+                            );
 
                             $file = new \FoF\Upload\File();
                             $file->post()->associate($post);
