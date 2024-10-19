@@ -326,7 +326,7 @@ class Migrator
                         foreach ($attachments as $arow)
                         {
                             $filePath = $this->getMybbPath().'uploads/'.$arow->attachname;
-                            $toFilePath = self::FLARUM_UPLOAD_PATH.'old/'.$arow->uid.$arow->filename;
+                            $toFilePath = self::FLARUM_UPLOAD_PATH.'old/'.$prow->pid.$arow->filename;
                             $dirFilePath = dirname($toFilePath);
 
                             if(!file_exists($dirFilePath))
@@ -353,11 +353,11 @@ class Migrator
                             //filename
                             $file->base_name = $arow->filename;
                             //cesta k souboru
-                            $file->path = 'old/'.$arow->uid.$arow->filename;
+                            $file->path = 'old/'.$prow->pid.$arow->filename;
                             $file->type = $arow->filetype;
                             $file->size = (int)$arow->filesize;
                             $file->upload_method = 'local';
-                            $file->url = $generator->to('forum')->path('assets/files/old/'.$arow->uid.$arow->filename);
+                            $file->url = $generator->to('forum')->path('assets/files/old/'.$prow->pid.$arow->filename);
                             $file->uuid = Uuid::uuid4()->toString();
                             $file->tag = $fileTemplate;
                             $file->save();
