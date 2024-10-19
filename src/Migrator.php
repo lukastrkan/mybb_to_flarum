@@ -228,6 +228,7 @@ class Migrator
     ) {
         $migrateAttachments = class_exists('FoF\Upload\File') && $migrateAttachments;
         $migrateWithUsers = true;
+        $migrateWithCategories = true;
 
         /** @var UrlGenerator $generator */
         $generator = resolve(UrlGenerator::class);
