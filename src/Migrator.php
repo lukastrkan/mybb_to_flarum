@@ -227,6 +227,7 @@ class Migrator
         bool $migrateSoftDeletePosts, bool $migrateAttachments
     ) {
         $migrateAttachments = class_exists('FoF\Upload\File') && $migrateAttachments;
+        $migrateWithUsers = true;
 
         /** @var UrlGenerator $generator */
         $generator = resolve(UrlGenerator::class);
@@ -241,8 +242,8 @@ class Migrator
 
         if(count($threads) > 0)
         {
-            Discussion::getQuery()->delete();
-            Post::getQuery()->delete();
+            Discussion::getQuery()->whereRaw('id<359')->delete();
+            Post::getQuery()->whereRaw('discussion_id<359')->delete();
             $usersToRefresh = [];
 
             foreach ($threads as $trow)
@@ -324,7 +325,7 @@ class Migrator
                         foreach ($attachments as $arow)
                         {
                             $filePath = $this->getMybbPath().'uploads/'.$arow->attachname;
-                            $toFilePath = self::FLARUM_UPLOAD_PATH.'old/'.$arow->filename;
+                            $toFilePath = self::FLARUM_UPLOAD_PATH.'old/'.$arow->uid.$arow->filename;
                             $dirFilePath = dirname($toFilePath);
 
                             if(!file_exists($dirFilePath))
@@ -351,11 +352,11 @@ class Migrator
                             //filename
                             $file->base_name = $arow->filename;
                             //cesta k souboru
-                            $file->path = 'old/'.$arow->filename;
+                            $file->path = 'old/'.$arow->uid.$arow->filename;
                             $file->type = $arow->filetype;
                             $file->size = (int)$arow->filesize;
                             $file->upload_method = 'local';
-                            $file->url = $generator->to('forum')->path('assets/files/old/'.$arow->filename);
+                            $file->url = $generator->to('forum')->path('assets/files/old/'.$arow->uid.$arow->filename);
                             $file->uuid = Uuid::uuid4()->toString();
                             $file->tag = $fileTemplate;
                             $file->save();
